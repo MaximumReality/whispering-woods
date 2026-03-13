@@ -1310,6 +1310,7 @@ function spawnFireflies() {
 
 // ====== GAME START ======
 function startGame() {
+  bgMusic.play();
   document.getElementById('title-screen').classList.remove('active');
   document.getElementById('game-screen').classList.add('active');
   buildVillagers();
