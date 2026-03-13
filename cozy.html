@@ -676,7 +676,24 @@
   }
 
   .furniture-piece:hover { transform: scale(1.1) translateY(-3px); }
-  .furniture-piece.dragging { cursor: grabbing; opacity: 0.7; z-index: 50; }
+  .furniture-piece.dragging { cursor: grabbing; opacity: 0.8; z-index: 50; transition: none; }
+
+  .furn-delete {
+    display: none;
+    position: absolute;
+    top: -8px; right: -8px;
+    width: 18px; height: 18px;
+    background: var(--rose);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.6rem;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 60;
+    line-height: 1;
+  }
+  .furniture-piece:hover .furn-delete { display: flex; }
 
   .shop-grid {
     display: grid;
@@ -1153,7 +1170,7 @@
         </div>
 
         <div id="home-tab-decorate" style="margin-top:16px;">
-          <div class="section-label">Drag furniture to rearrange. Click to remove.</div>
+          <div class="section-label">🖱️ Drag furniture to move it &nbsp;·&nbsp; 🗑️ Click the trash icon to remove</div>
           <div id="placed-furniture-list" style="display:flex;flex-wrap:wrap;gap:8px;min-height:30px;margin-top:8px;"></div>
         </div>
 
@@ -1629,26 +1646,129 @@ function buyItem(idx) {
   const item = shopItems[idx];
   if (gold < item.price) { addNotif('❌ Not enough moonleaves!'); return; }
   addGold(-item.price);
-  placedFurniture.push({ ...item, x: 20 + Math.random() * 50, y: 30 + Math.random() * 30, id: Date.now() });
+  // Place on the floor area (bottom 45% of room = y 0–40%)
+  placedFurniture.push({ ...item, x: 15 + Math.random() * 65, y: 5 + Math.random() * 25, id: Date.now() });
   renderFurniture();
-  addNotif(`✅ Bought ${item.name}!`);
+  addNotif(`✅ Bought ${item.name}! Check the Decorate tab.`);
 }
 
 function renderFurniture() {
   const c = document.getElementById('furniture-container');
   c.innerHTML = placedFurniture.map(f => `
-    <div class="furniture-piece" 
+    <div class="furniture-piece"
+         id="furn-${f.id}"
          style="left:${f.x}%;bottom:${f.y}%;transform:translateX(-50%)"
-         title="${f.name} (click to remove)"
-         onclick="removeFurniture(${f.id})">${f.emoji}</div>
+         data-id="${f.id}"
+         title="${f.name}">
+      ${f.emoji}
+      <span class="furn-delete" onclick="removeFurniture(${f.id}, event)" title="Remove">✕</span>
+    </div>
   `).join('');
+
+  // Attach drag listeners to each piece
+  c.querySelectorAll('.furniture-piece').forEach(el => {
+    el.addEventListener('mousedown', startDrag);
+    el.addEventListener('touchstart', startDragTouch, { passive: false });
+  });
+
   const list = document.getElementById('placed-furniture-list');
-  list.innerHTML = placedFurniture.map(f =>
-    `<span style="font-size:1.4rem" title="${f.name}">${f.emoji}</span>`
-  ).join('') || '<span style="color:var(--sage);font-size:0.8rem;font-style:italic">Your cottage is empty… visit the shop!</span>';
+  if (list) {
+    list.innerHTML = placedFurniture.map(f =>
+      `<span style="font-size:1.4rem" title="${f.name}">${f.emoji}</span>`
+    ).join('') || '<span style="color:var(--sage);font-size:0.8rem;font-style:italic">Your cottage is empty… visit the shop!</span>';
+  }
 }
 
-function removeFurniture(id) {
+// ── Drag-and-drop ──────────────────────────────────────
+let dragState = null;
+
+function startDrag(e) {
+  if (e.target.classList.contains('furn-delete')) return;
+  e.preventDefault();
+  const el = e.currentTarget;
+  const room = document.getElementById('home-room');
+  const roomRect = room.getBoundingClientRect();
+  const floorHeight = roomRect.height * 0.45; // floor zone height in px
+
+  dragState = {
+    el,
+    id: parseInt(el.dataset.id),
+    room, roomRect, floorHeight,
+    startX: e.clientX, startY: e.clientY,
+  };
+  el.classList.add('dragging');
+  document.addEventListener('mousemove', onDrag);
+  document.addEventListener('mouseup', stopDrag);
+}
+
+function startDragTouch(e) {
+  if (e.target.classList.contains('furn-delete')) return;
+  e.preventDefault();
+  const touch = e.touches[0];
+  const el = e.currentTarget;
+  const room = document.getElementById('home-room');
+  const roomRect = room.getBoundingClientRect();
+  const floorHeight = roomRect.height * 0.45;
+
+  dragState = { el, id: parseInt(el.dataset.id), room, roomRect, floorHeight };
+  el.classList.add('dragging');
+  document.addEventListener('touchmove', onDragTouch, { passive: false });
+  document.addEventListener('touchend', stopDragTouch);
+}
+
+function onDrag(e) {
+  if (!dragState) return;
+  moveFurnitureEl(e.clientX, e.clientY);
+}
+
+function onDragTouch(e) {
+  if (!dragState) return;
+  e.preventDefault();
+  moveFurnitureEl(e.touches[0].clientX, e.touches[0].clientY);
+}
+
+function moveFurnitureEl(clientX, clientY) {
+  const { el, roomRect, floorHeight } = dragState;
+  // Position as % of room
+  let xPct = ((clientX - roomRect.left) / roomRect.width) * 100;
+  // Clamp to floor zone only (bottom 45%)
+  let yFromBottom = ((roomRect.bottom - clientY) / roomRect.height) * 100;
+  yFromBottom = Math.max(2, Math.min(38, yFromBottom)); // floor only
+  xPct = Math.max(5, Math.min(93, xPct));
+
+  el.style.left = xPct + '%';
+  el.style.bottom = yFromBottom + '%';
+  // Save back to state for stopDrag
+  dragState.finalX = xPct;
+  dragState.finalY = yFromBottom;
+}
+
+function stopDrag() {
+  if (!dragState) return;
+  dragState.el.classList.remove('dragging');
+  if (dragState.finalX !== undefined) {
+    const f = placedFurniture.find(f => f.id === dragState.id);
+    if (f) { f.x = dragState.finalX; f.y = dragState.finalY; }
+  }
+  document.removeEventListener('mousemove', onDrag);
+  document.removeEventListener('mouseup', stopDrag);
+  dragState = null;
+}
+
+function stopDragTouch() {
+  if (!dragState) return;
+  dragState.el.classList.remove('dragging');
+  if (dragState.finalX !== undefined) {
+    const f = placedFurniture.find(f => f.id === dragState.id);
+    if (f) { f.x = dragState.finalX; f.y = dragState.finalY; }
+  }
+  document.removeEventListener('touchmove', onDragTouch);
+  document.removeEventListener('touchend', stopDragTouch);
+  dragState = null;
+}
+
+function removeFurniture(id, e) {
+  if (e) e.stopPropagation();
   placedFurniture = placedFurniture.filter(f => f.id !== id);
   renderFurniture();
   addNotif('🗑️ Removed furniture');
