@@ -936,7 +936,110 @@
   }
 
   .wall-opt:hover, .wall-opt.selected { border-color: var(--gold); transform: scale(1.1); }
-</style>
+
+  /* ===== DAY/NIGHT ===== */
+  .world-sky { transition: background 4s ease; }
+  .world-ground { transition: background 4s ease; }
+  .world-moon { transition: opacity 2s, box-shadow 2s; }
+  .world-sun {
+    position: absolute; top: 18px; left: 80px;
+    width: 44px; height: 44px;
+    background: radial-gradient(circle, #fff7aa, #f5c842);
+    border-radius: 50%;
+    box-shadow: 0 0 20px rgba(245,200,66,0.7), 0 0 60px rgba(245,200,66,0.3);
+    opacity: 0; transition: opacity 2s;
+  }
+  .time-badge {
+    position: absolute; top: 14px; right: 14px;
+    background: rgba(0,0,0,0.45); border: 1px solid rgba(212,168,83,0.25);
+    padding: 5px 12px; font-size: 0.75rem; color: var(--amber);
+    font-family: 'Cinzel Decorative', cursive; letter-spacing: 0.1em;
+    pointer-events: none;
+  }
+
+  /* ===== WANDERING VILLAGERS ===== */
+  .wvillager {
+    position: absolute; bottom: 12%;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    cursor: pointer; transition: transform 0.2s; z-index: 5;
+    animation: villagerBob 2s ease-in-out infinite alternate;
+  }
+  .wvillager:hover { transform: scale(1.15) translateY(-4px); }
+  .wvillager-emoji { font-size: 1.8rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+  .wvillager-name {
+    font-size: 0.6rem; color: var(--amber); background: rgba(0,0,0,0.6);
+    padding: 2px 6px; border-radius: 8px; border: 1px solid rgba(212,168,83,0.3);
+    white-space: nowrap;
+  }
+  @keyframes villagerBob {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-5px); }
+  }
+
+  /* ===== AREAS ===== */
+  .area-spot {
+    position: absolute; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    transition: transform 0.2s;
+  }
+  .area-spot:hover { transform: scale(1.08) translateY(-3px); }
+  .area-icon { font-size: 2.2rem; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
+  .area-label {
+    font-size: 0.62rem; color: var(--mint); background: rgba(0,0,0,0.55);
+    padding: 2px 7px; border-radius: 8px; border: 1px solid rgba(168,213,162,0.25);
+    white-space: nowrap; opacity: 0; transition: opacity 0.2s;
+  }
+  .area-spot:hover .area-label { opacity: 1; }
+
+  /* ===== LETTERS ===== */
+  .letter-badge {
+    position: absolute; top: -6px; right: -6px;
+    background: var(--rose); color: white; border-radius: 50%;
+    width: 16px; height: 16px; font-size: 0.6rem;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; animation: pulse 1s infinite alternate;
+  }
+  @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.2); } }
+
+  .letter-card {
+    background: rgba(245,237,214,0.06); border: 1px solid rgba(212,168,83,0.25);
+    padding: 16px; margin-bottom: 12px; position: relative;
+  }
+  .letter-from { font-family: 'Cinzel Decorative', cursive; font-size: 0.72rem; color: var(--amber); margin-bottom: 6px; }
+  .letter-body { font-size: 0.88rem; color: var(--cream); font-style: italic; line-height: 1.6; }
+  .letter-time { font-size: 0.68rem; color: var(--sage); margin-top: 8px; }
+  .letter-unread { border-color: var(--gold); background: rgba(212,168,83,0.08); }
+
+  /* ===== INVENTORY ===== */
+  .inv-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    gap: 8px;
+  }
+  .inv-slot {
+    background: rgba(45,74,29,0.3); border: 1px solid rgba(122,171,106,0.2);
+    aspect-ratio: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 3px;
+    font-size: 1.6rem; cursor: default; transition: border-color 0.2s;
+    position: relative;
+  }
+  .inv-slot:hover { border-color: rgba(212,168,83,0.4); }
+  .inv-slot-label { font-size: 0.58rem; color: var(--sage); text-align: center; line-height: 1.2; }
+  .inv-count {
+    position: absolute; top: 2px; right: 4px;
+    font-size: 0.65rem; color: var(--amber); font-weight: bold;
+  }
+
+  /* ===== SAVE INDICATOR ===== */
+  .save-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--sage);
+    display: inline-block; margin-left: 6px;
+    animation: savePulse 0.6s ease 3;
+  }
+  @keyframes savePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(1.5)} }
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -987,6 +1090,13 @@
         <div class="nav-btn" onclick="showView('terminal')" id="nav-terminal">
           <span class="nav-icon">💻</span> Azul OS
         </div>
+        <div class="nav-btn" onclick="showView('inventory')" id="nav-inventory">
+          <span class="nav-icon">🎒</span> Inventory
+        </div>
+        <div class="nav-btn" onclick="showView('letters')" id="nav-letters" style="position:relative">
+          <span class="nav-icon">💌</span> Letters
+          <span id="letter-badge" class="letter-badge" style="display:none">0</span>
+        </div>
       </div>
 
       <div class="gold-display">
@@ -1008,11 +1118,15 @@
 
       <!-- WORLD VIEW -->
       <div id="view-world" class="world-view">
-        <div class="world-sky">
-          <div class="world-moon"></div>
+        <div class="world-sky" id="world-sky">
+          <div class="world-sun" id="world-sun"></div>
+          <div class="world-moon" id="world-moon"></div>
         </div>
-        <div class="world-ground"></div>
+        <div class="world-ground" id="world-ground"></div>
         <div class="world-path"></div>
+
+        <!-- Time badge -->
+        <div class="time-badge" id="time-badge">🌙 Midnight</div>
 
         <!-- Trees -->
         <div style="position:absolute;bottom:32%;left:5%">
@@ -1047,45 +1161,53 @@
           </svg>
         </div>
 
-        <!-- Clickable spots -->
+        <!-- Fixed destination spots -->
         <div class="spot" style="bottom:22%;left:42%" onclick="goToFishing()">
           <div class="spot-icon">🌊</div>
           <div class="spot-label">Moonstone Pond</div>
         </div>
-
-        <div class="spot" style="bottom:18%;left:28%" onclick="goToVillager('Fernwick')">
-          <div class="spot-icon">🦔</div>
-          <div class="spot-label">Fernwick is here!</div>
-        </div>
-
         <div class="spot" style="bottom:15%;right:30%" onclick="goToFarming()">
           <div class="spot-icon">🌻</div>
           <div class="spot-label">Enchanted Garden</div>
         </div>
-
         <div class="spot" style="bottom:10%;left:48%" onclick="showView('home')">
           <div class="spot-icon">🏡</div>
           <div class="spot-label">Your Cottage</div>
         </div>
-
         <div class="spot" style="bottom:25%;right:15%" onclick="showView('cooking')">
           <div class="spot-icon">🍳</div>
           <div class="spot-label">Mochkil's Kitchen</div>
         </div>
-
         <div class="spot" style="bottom:38%;left:20%" onclick="showView('terminal')">
           <div class="spot-icon">💻</div>
           <div class="spot-label">Azul OS Terminal</div>
         </div>
-        <div id="world-fireflies"></div>
 
-        <!-- Floating leaves -->
+        <!-- New areas -->
+        <div class="area-spot" style="bottom:40%;left:2%" onclick="showView('cave')">
+          <div class="area-icon">🕳️</div>
+          <div class="area-label">Crystal Cave</div>
+        </div>
+        <div class="area-spot" style="bottom:35%;right:2%" onclick="showView('market')">
+          <div class="area-icon">🏪</div>
+          <div class="area-label">Night Market</div>
+        </div>
+        <div class="area-spot" style="bottom:48%;left:38%" onclick="showView('treehouse')">
+          <div class="area-icon">🌳</div>
+          <div class="area-label">The Treehouse</div>
+        </div>
+
+        <!-- Wandering villagers container -->
+        <div id="wandering-villagers"></div>
+
+        <!-- Fireflies & particles -->
+        <div id="world-fireflies"></div>
         <div id="world-particles"></div>
 
-        <!-- Welcome msg -->
+        <!-- Forest whispers -->
         <div style="position:absolute;top:20px;left:20px;max-width:220px;background:rgba(0,0,0,0.5);border:1px solid rgba(212,168,83,0.2);padding:12px 14px;font-size:0.82rem;line-height:1.5;color:var(--mint);">
           <div style="font-family:'Cinzel Decorative',cursive;font-size:0.65rem;color:var(--amber);margin-bottom:6px;">✦ Forest Whispers</div>
-          A gentle breeze carries the scent of moonflowers… The village stirs with life tonight.
+          <span id="forest-whisper">A gentle breeze carries the scent of moonflowers…</span>
         </div>
       </div>
 
@@ -1188,6 +1310,129 @@
     </div>
   </div>
 </div>
+
+      <!-- CAVE PANEL -->
+      <div id="view-cave" class="panel">
+        <div class="panel-header">
+          <div class="panel-title">🕳️ Crystal Cave</div>
+          <button class="close-btn" onclick="showView('world')">✕</button>
+        </div>
+        <div style="text-align:center;padding:20px 0;">
+          <div style="font-size:4rem;margin-bottom:12px;filter:drop-shadow(0 0 20px rgba(155,139,180,0.8))">💎</div>
+          <p style="color:var(--lavender);font-style:italic;margin-bottom:24px;">"The crystals hum with ancient magic…"</p>
+        </div>
+        <div style="max-width:500px;margin:0 auto;">
+          <div class="section-label">Cave Formations</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;">
+            <div class="shop-item" onclick="mineCrystal('💎','Moon Crystal',40)">
+              <span class="shop-item-icon">💎</span>
+              <div class="shop-item-name">Moon Crystal</div>
+              <div class="shop-item-price">Mine (+40🌿)</div>
+            </div>
+            <div class="shop-item" onclick="mineCrystal('🪨','Cave Stone',10)">
+              <span class="shop-item-icon">🪨</span>
+              <div class="shop-item-name">Cave Stone</div>
+              <div class="shop-item-price">Mine (+10🌿)</div>
+            </div>
+            <div class="shop-item" onclick="mineCrystal('✨','Stardust',25)">
+              <span class="shop-item-icon">✨</span>
+              <div class="shop-item-name">Stardust</div>
+              <div class="shop-item-price">Mine (+25🌿)</div>
+            </div>
+            <div class="shop-item" onclick="mineCrystal('🔮','Fae Orb',60)">
+              <span class="shop-item-icon">🔮</span>
+              <div class="shop-item-name">Fae Orb</div>
+              <div class="shop-item-price">Mine (+60🌿)</div>
+            </div>
+            <div class="shop-item" onclick="mineCrystal('🦇','Cave Bat',0)">
+              <span class="shop-item-icon">🦇</span>
+              <div class="shop-item-name">Just a Bat</div>
+              <div class="shop-item-price">Startle it…</div>
+            </div>
+            <div class="shop-item" onclick="mineCrystal('🍄','Glow Fungus',15)">
+              <span class="shop-item-icon">🍄</span>
+              <div class="shop-item-name">Glow Fungus</div>
+              <div class="shop-item-price">Harvest (+15🌿)</div>
+            </div>
+          </div>
+          <div id="cave-log" style="font-size:0.82rem;color:var(--lavender);font-style:italic;min-height:40px;">
+            Your pickaxe gleams in the crystal light…
+          </div>
+        </div>
+      </div>
+
+      <!-- MARKET PANEL -->
+      <div id="view-market" class="panel">
+        <div class="panel-header">
+          <div class="panel-title">🏪 Night Market</div>
+          <button class="close-btn" onclick="showView('world')">✕</button>
+        </div>
+        <div style="text-align:center;padding:12px 0 20px;">
+          <p style="color:var(--sage);font-style:italic;">Rare goods from across the enchanted realm…</p>
+        </div>
+        <div style="max-width:520px;margin:0 auto;">
+          <div class="section-label">🌟 Special Wares — Refreshes each visit</div>
+          <div class="shop-grid" id="market-grid"></div>
+          <div style="margin-top:20px;">
+            <div class="section-label">Sell your items</div>
+            <div id="sell-inventory" style="display:flex;gap:8px;flex-wrap:wrap;min-height:40px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TREEHOUSE PANEL -->
+      <div id="view-treehouse" class="panel">
+        <div class="panel-header">
+          <div class="panel-title">🌳 The Treehouse</div>
+          <button class="close-btn" onclick="showView('world')">✕</button>
+        </div>
+        <div style="text-align:center;padding:16px 0 20px;">
+          <div style="font-size:3.5rem;margin-bottom:8px;">🦉</div>
+          <p style="color:var(--amber);font-style:italic;">"Lumis the Owl keeps watch from above…"</p>
+        </div>
+        <div style="max-width:500px;margin:0 auto;">
+          <div class="section-label">⭐ Constellation Board — Collect star patterns</div>
+          <div id="constellation-board" style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:20px;"></div>
+          <div class="section-label">📖 Lumis's Lore — Ancient forest secrets</div>
+          <div id="lore-entry" style="background:rgba(45,74,29,0.3);border:1px solid rgba(122,171,106,0.15);padding:16px;font-style:italic;color:var(--cream);font-size:0.88rem;line-height:1.7;">
+            Click a constellation above to learn its story…
+          </div>
+          <button class="btn" style="margin-top:16px;padding:10px 24px;" onclick="talkToLumis()">🦉 Ask Lumis a Question</button>
+        </div>
+      </div>
+
+      <!-- INVENTORY PANEL -->
+      <div id="view-inventory" class="panel">
+        <div class="panel-header">
+          <div class="panel-title">🎒 Your Inventory</div>
+          <button class="close-btn" onclick="showView('world')">✕</button>
+        </div>
+        <div style="max-width:520px;margin:0 auto;">
+          <div class="section-label">All collected items</div>
+          <div class="inv-grid" id="full-inventory-grid"></div>
+          <div id="inv-empty" style="color:var(--sage);font-style:italic;font-size:0.85rem;display:none;">
+            Your bag is empty… go explore! Fish, farm, mine, and cook to fill it up.
+          </div>
+          <div style="margin-top:20px;">
+            <div class="section-label">Stats</div>
+            <div id="inv-stats" style="font-size:0.82rem;color:var(--mint);line-height:2;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LETTERS PANEL -->
+      <div id="view-letters" class="panel">
+        <div class="panel-header">
+          <div class="panel-title">💌 Forest Mail</div>
+          <button class="close-btn" onclick="showView('world')">✕</button>
+        </div>
+        <div style="max-width:520px;margin:0 auto;">
+          <div id="letters-list"></div>
+          <div id="no-letters" style="text-align:center;padding:40px 20px;color:var(--sage);font-style:italic;">
+            No letters yet… spend time with the villagers and they'll write to you 💌
+          </div>
+        </div>
+      </div>
 
       <!-- COOKING PANEL -->
       <div id="view-cooking" class="panel">
@@ -1404,7 +1649,8 @@ function startGame() {
     document.getElementById('music-btn').classList.add('playing');
     document.getElementById('music-bars').classList.remove('paused');
     document.getElementById('music-label').textContent = '♪ Now Playing';
-  }).catch(() => {}); // browser blocked autoplay, user can tap button
+  }).catch(() => {});
+
   document.getElementById('title-screen').classList.remove('active');
   document.getElementById('game-screen').classList.add('active');
   buildVillagers();
@@ -1413,11 +1659,23 @@ function startGame() {
   buildWallpapers();
   buildRecipeHints();
   renderPot();
+  updateDayNight();
+  spawnWanderingVillagers();
   spawnWorldFireflies();
   spawnWorldParticles();
-  setTimeout(() => showDialogue('Lumis', ["The forest welcomes you, spirit. Your story begins tonight…"]), 800);
-}
 
+  // Schedule villager letters
+  villagerLetters.forEach(l => scheduleLetter(l));
+
+  // Try to load save
+  loadGame().then(loaded => {
+    if (!loaded) {
+      setTimeout(() => showDialogue('🦉 Lumis', ["The forest welcomes you, spirit. Your story begins tonight…"]), 800);
+    } else {
+      setTimeout(() => showDialogue('🌿 The Forest', ["Welcome back, Forest Spirit. The trees remember you…"]), 800);
+    }
+  });
+}
 function goToFishing() { showView('fishing'); }
 function goToFarming() { showView('farming'); }
 function goToVillager(name) {
@@ -2008,6 +2266,359 @@ function triggerGlitch() {
   document.body.style.filter = "invert(1) hue-rotate(90deg)";
   setTimeout(() => { document.body.style.filter = "none"; }, 150);
 }
+
+// ====== FIREBASE ======
+const firebaseConfig = {
+  apiKey: "AIzaSyD7UCjd17hlFrCn4i6eK12-lGPDJp_uhLU",
+  authDomain: "maximum-reality-guestbook.firebaseapp.com",
+  projectId: "maximum-reality-guestbook",
+  storageBucket: "maximum-reality-guestbook.firebasestorage.app",
+  messagingSenderId: "401509956215",
+  appId: "1:401509956215:web:255aefbb7fac268bb7a472",
+  measurementId: "G-HL0T5P5Y5E"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const SAVE_ID = "player_save_1";
+
+async function saveGame() {
+  try {
+    await db.collection("whispering_woods").doc(SAVE_ID).set({
+      gold, energy, joy, water,
+      inventory,
+      placedFurniture,
+      currentWall,
+      catches: catches.map(c => c.name),
+      letters,
+      unreadLetters,
+      savedAt: new Date().toISOString()
+    });
+    // Show save dot on gold display
+    const gd = document.querySelector('.gold-display');
+    const dot = document.createElement('span');
+    dot.className = 'save-dot'; dot.title = 'Saved!';
+    gd.appendChild(dot);
+    setTimeout(() => dot.remove(), 2000);
+  } catch(e) { console.warn("Save failed:", e); }
+}
+
+async function loadGame() {
+  try {
+    const doc = await db.collection("whispering_woods").doc(SAVE_ID).get();
+    if (!doc.exists) return false;
+    const d = doc.data();
+    gold = d.gold || 120;
+    energy = d.energy || 80;
+    joy = d.joy || 60;
+    water = d.water || 90;
+    inventory = d.inventory || [];
+    placedFurniture = d.placedFurniture || [];
+    currentWall = d.currentWall || '#2a1f3a';
+    letters = d.letters || [];
+    unreadLetters = d.unreadLetters || 0;
+    document.getElementById('gold-amount').textContent = gold;
+    document.getElementById('energy-bar').style.width = energy + '%';
+    document.getElementById('joy-bar').style.width = joy + '%';
+    document.getElementById('water-bar').style.width = water + '%';
+    document.getElementById('room-wall').style.background = currentWall;
+    renderFurniture();
+    updateLetterBadge();
+    addNotif('🌿 Welcome back! Game loaded.');
+    return true;
+  } catch(e) {
+    console.warn("Load failed:", e);
+    return false;
+  }
+}
+
+// Auto-save every 60 seconds
+setInterval(saveGame, 60000);
+
+// ====== DAY / NIGHT CYCLE ======
+const timeOfDay = [
+  { hour: 0,  name: '🌙 Midnight',  sky: 'linear-gradient(180deg,#0a1a10 0%,#1a3020 60%,#2d5c3a 100%)', ground: 'linear-gradient(180deg,#1f3012 0%,#142308 60%,#0f1a06 100%)', moonOp: 1, sunOp: 0, fireflies: true,  whisper: "The forest dreams under the stars…" },
+  { hour: 4,  name: '🌫️ Before Dawn', sky: 'linear-gradient(180deg,#0f1f1f 0%,#1a2f3a 60%,#2a4050 100%)', ground: 'linear-gradient(180deg,#1a2a10 0%,#102008 60%,#0a1505 100%)', moonOp: 0.5, sunOp: 0, fireflies: true,  whisper: "Dew settles on the leaves in silence…" },
+  { hour: 6,  name: '🌅 Dawn',       sky: 'linear-gradient(180deg,#3a2a10 0%,#7a4a1a 40%,#c87a30 100%)', ground: 'linear-gradient(180deg,#2d4a1a 0%,#1f3312 60%,#162410 100%)', moonOp: 0,   sunOp: 0.6, fireflies: false, whisper: "The birds begin their morning songs…" },
+  { hour: 9,  name: '☀️ Morning',    sky: 'linear-gradient(180deg,#1a4a6a 0%,#2a7aaa 50%,#5aaad0 100%)', ground: 'linear-gradient(180deg,#3d5a1a 0%,#2a4010 60%,#1f3008 100%)', moonOp: 0,   sunOp: 1,   fireflies: false, whisper: "Sunlight filters through the canopy…" },
+  { hour: 13, name: '🌞 Afternoon',  sky: 'linear-gradient(180deg,#0a3a6a 0%,#1a6aaa 50%,#4aaad0 100%)', ground: 'linear-gradient(180deg,#4a6a20 0%,#355015 60%,#283a10 100%)', moonOp: 0,   sunOp: 1,   fireflies: false, whisper: "Butterflies dance in the warm light…" },
+  { hour: 17, name: '🌇 Sunset',     sky: 'linear-gradient(180deg,#2a1a0a 0%,#7a3a10 40%,#c05a20 100%)', ground: 'linear-gradient(180deg,#3a4a15 0%,#2a3a10 60%,#1a2a08 100%)', moonOp: 0.2, sunOp: 0.7, fireflies: false, whisper: "The sky melts into amber and rose…" },
+  { hour: 20, name: '🌆 Dusk',       sky: 'linear-gradient(180deg,#0f1020 0%,#1a2030 60%,#2a3540 100%)', ground: 'linear-gradient(180deg,#253318 0%,#182510 60%,#101808 100%)', moonOp: 0.7, sunOp: 0,   fireflies: true,  whisper: "The first fireflies emerge from the ferns…" },
+  { hour: 22, name: '🌃 Night',      sky: 'linear-gradient(180deg,#060e0a 0%,#0f1f14 60%,#1a3020 100%)', ground: 'linear-gradient(180deg,#1a2810 0%,#111c08 60%,#0a1205 100%)', moonOp: 1,   sunOp: 0,   fireflies: true,  whisper: "The moon lights a silver path through the trees…" },
+];
+
+let gameHour = new Date().getHours(); // start at real time
+
+function getTimeSlot(h) {
+  for (let i = timeOfDay.length - 1; i >= 0; i--) {
+    if (h >= timeOfDay[i].hour) return timeOfDay[i];
+  }
+  return timeOfDay[0];
+}
+
+function updateDayNight() {
+  const slot = getTimeSlot(gameHour);
+  document.getElementById('world-sky').style.background = slot.sky;
+  document.getElementById('world-ground').style.background = slot.ground;
+  document.getElementById('world-moon').style.opacity = slot.moonOp;
+  document.getElementById('world-sun').style.opacity = slot.sunOp;
+  document.getElementById('time-badge').textContent = slot.name;
+  document.getElementById('forest-whisper').textContent = slot.whisper;
+  gameHour = (gameHour + 1) % 24;
+}
+
+// Advance time every 3 minutes
+setInterval(updateDayNight, 180000);
+
+// ====== WANDERING VILLAGERS ======
+const villagerPositions = {};
+
+function spawnWanderingVillagers() {
+  const c = document.getElementById('wandering-villagers');
+  c.innerHTML = '';
+  villagers.forEach(v => {
+    const el = document.createElement('div');
+    el.className = 'wvillager';
+    el.id = 'wv-' + v.name;
+    const x = 10 + Math.random() * 75;
+    el.style.left = x + '%';
+    el.innerHTML = `<div class="wvillager-emoji">${v.emoji}</div><div class="wvillager-name">${v.name}</div>`;
+    el.onclick = () => showDialogue(`${v.emoji} ${v.name}`, v.dialogues);
+    c.appendChild(el);
+    villagerPositions[v.name] = { x, dir: Math.random() > 0.5 ? 1 : -1 };
+  });
+}
+
+function wanderVillagers() {
+  villagers.forEach(v => {
+    const pos = villagerPositions[v.name];
+    if (!pos) return;
+    pos.x += pos.dir * (0.3 + Math.random() * 0.4);
+    if (pos.x > 88 || pos.x < 5) pos.dir *= -1;
+    const el = document.getElementById('wv-' + v.name);
+    if (el) {
+      el.style.left = pos.x + '%';
+      el.style.transform = pos.dir < 0 ? 'scaleX(-1)' : 'scaleX(1)';
+    }
+    // Randomly pause
+    if (Math.random() < 0.1) pos.dir *= -1;
+  });
+}
+
+setInterval(wanderVillagers, 800);
+
+// ====== LETTERS ======
+let letters = [];
+let unreadLetters = 0;
+
+const villagerLetters = [
+  { from: '🦔 Fernwick', delay: 45000,  body: "Dear Forest Spirit, I found something peculiar near the old oak — a door, no bigger than a mushroom, carved with your name. I thought you should know. Come find me when the moon is high. — Fernwick" },
+  { from: '🧚 Petal',    delay: 90000,  body: "HI HI HI!! I made you something!! It's a flower crown made of moonroses and sunblooms and I left it by the pond for you!! Also I maybe accidentally turned three fireflies into tiny suns? Anyway come see me!! — Petal 🌸" },
+  { from: '🦦 Merrow',   delay: 150000, body: "The river spoke of you today. She said you have a gentle spirit and still waters. I thought you'd want to know. The fish have been asking for you at the pond. — Merrow" },
+  { from: '🐻 Thistledown', delay: 210000, body: "Child, your garden grows well. I can smell the moonroses from my cottage. Take this old recipe: three glowshrooms, one sunbloom, patience, and a full moon. You'll know what to do. — Thistledown" },
+  { from: '🦉 Lumis',    delay: 300000, body: "I have watched you explore our little world. The stars have taken notice. When you are ready, climb to the treehouse. There is a constellation there with your name. — Lumis" },
+  { from: '🐇 Briar',    delay: 60000,  body: "OKAY so I found that door in the tree again and THIS TIME it was open?? And inside was just… more tree?? But like, GLOWING tree?? I'm going back tomorrow. You should come. Don't tell Thistledown. — Briar 🐇" },
+];
+
+function scheduleLetter(letter) {
+  setTimeout(() => {
+    letters.unshift({ ...letter, time: new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}), read: false });
+    unreadLetters++;
+    updateLetterBadge();
+    addNotif(`💌 New letter from ${letter.from}!`);
+    saveGame();
+  }, letter.delay);
+}
+
+function updateLetterBadge() {
+  const badge = document.getElementById('letter-badge');
+  if (unreadLetters > 0) {
+    badge.style.display = 'flex';
+    badge.textContent = unreadLetters;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function renderLetters() {
+  const list = document.getElementById('letters-list');
+  const empty = document.getElementById('no-letters');
+  if (letters.length === 0) {
+    list.innerHTML = ''; empty.style.display = 'block'; return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = letters.map((l, i) => `
+    <div class="letter-card ${l.read ? '' : 'letter-unread'}" onclick="readLetter(${i})">
+      <div class="letter-from">${l.read ? '' : '● '} ${l.from}</div>
+      <div class="letter-body">${l.body}</div>
+      <div class="letter-time">${l.time}</div>
+    </div>
+  `).join('');
+}
+
+function readLetter(i) {
+  if (!letters[i].read) {
+    letters[i].read = true;
+    unreadLetters = Math.max(0, unreadLetters - 1);
+    updateLetterBadge();
+    saveGame();
+  }
+}
+
+// ====== INVENTORY PANEL ======
+function renderInventoryPanel() {
+  const grid = document.getElementById('full-inventory-grid');
+  const empty = document.getElementById('inv-empty');
+  const stats = document.getElementById('inv-stats');
+
+  // Count items
+  const counts = {};
+  inventory.forEach(i => counts[i] = (counts[i] || 0) + 1);
+
+  const entries = Object.entries(counts);
+  if (entries.length === 0) {
+    grid.innerHTML = ''; empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    grid.innerHTML = entries.map(([emoji, count]) => `
+      <div class="inv-slot">
+        ${emoji}
+        ${count > 1 ? `<span class="inv-count">×${count}</span>` : ''}
+        <div class="inv-slot-label">${emojiName(emoji)}</div>
+      </div>
+    `).join('');
+  }
+
+  stats.innerHTML = `
+    Fish caught: <span style="color:var(--amber)">${catches.length}</span><br>
+    Moonleaves: <span style="color:var(--amber)">${gold}</span><br>
+    Items in bag: <span style="color:var(--amber)">${inventory.length}</span><br>
+    Meals cooked: <span style="color:var(--amber)">${document.getElementById('cooked-meals')?.children.length || 0}</span>
+  `;
+}
+
+function emojiName(e) {
+  const names = {'🌻':'Sunbloom','🍄':'Glowshroom','🌹':'Moonrose','🫐':'Faeberry','🐟':'Silverscale','🐠':'Crystal Trout','🔮':'Fae Pearl','⭐':'Starfish','💎':'Moon Crystal','🪨':'Cave Stone','✨':'Stardust','🦇':'Cave Bat'};
+  return names[e] || 'Item';
+}
+
+// ====== CAVE ======
+function mineCrystal(emoji, name, value) {
+  const log = document.getElementById('cave-log');
+  if (emoji === '🦇') {
+    log.textContent = '😱 The bat squeaks and dive-bombs your hat! You drop your pickaxe.';
+    addNotif('🦇 Startled by a bat!');
+    changeEnergy(-10);
+    return;
+  }
+  inventory.push(emoji);
+  if (value > 0) addGold(value);
+  changeEnergy(-8);
+  log.textContent = `✨ You mined a ${name}! ${value > 0 ? `+${value} moonleaves` : ''} Added to inventory.`;
+  addNotif(`⛏️ Mined ${name}!`);
+  updateCookingInventory();
+  saveGame();
+}
+
+// ====== MARKET ======
+const marketItems = [
+  { name: 'Star Map', emoji: '🗺️', price: 80 },
+  { name: 'Enchanted Seed', emoji: '🌱', price: 45 },
+  { name: 'Moonstone Ring', emoji: '💍', price: 120 },
+  { name: 'Ancient Scroll', emoji: '📜', price: 90 },
+  { name: 'Glow Potion', emoji: '🧪', price: 35 },
+  { name: 'Forest Flute', emoji: '🎵', price: 65 },
+  { name: 'Crystal Compass', emoji: '🧭', price: 100 },
+  { name: 'Fairy Dust', emoji: '🌟', price: 55 },
+];
+
+function buildMarket() {
+  // Show random 4 items each visit
+  const shuffled = [...marketItems].sort(() => Math.random() - 0.5).slice(0, 4);
+  const grid = document.getElementById('market-grid');
+  if (grid) grid.innerHTML = shuffled.map((item, i) => `
+    <div class="shop-item" onclick="buyMarketItem('${item.emoji}','${item.name}',${item.price})">
+      <span class="shop-item-icon">${item.emoji}</span>
+      <div class="shop-item-name">${item.name}</div>
+      <div class="shop-item-price">✨ ${item.price}</div>
+    </div>
+  `).join('');
+  // Sell panel
+  const sell = document.getElementById('sell-inventory');
+  if (sell) {
+    const counts = {};
+    inventory.forEach(i => counts[i] = (counts[i] || 0) + 1);
+    sell.innerHTML = Object.entries(counts).map(([e, c]) =>
+      `<div class="seed-opt" onclick="sellItem('${e}')" title="Sell for 5🌿">${e} ${c > 1 ? '×'+c : ''}<br><span style="font-size:0.65rem;color:var(--gold)">+5🌿</span></div>`
+    ).join('') || '<span style="color:var(--sage);font-size:0.8rem;font-style:italic">Nothing to sell yet</span>';
+  }
+}
+
+function buyMarketItem(emoji, name, price) {
+  if (gold < price) { addNotif('❌ Not enough moonleaves!'); return; }
+  addGold(-price);
+  inventory.push(emoji);
+  addNotif(`✅ Bought ${name}!`);
+  updateCookingInventory();
+  saveGame();
+}
+
+function sellItem(emoji) {
+  const idx = inventory.indexOf(emoji);
+  if (idx === -1) { addNotif('Nothing to sell!'); return; }
+  inventory.splice(idx, 1);
+  addGold(5);
+  addNotif(`💰 Sold ${emoji} for 5 moonleaves`);
+  buildMarket();
+  saveGame();
+}
+
+// ====== TREEHOUSE ======
+const constellations = [
+  { emoji: '⭐', name: 'The Wanderer',   lore: "A lone star that travels the sky each season, said to guide lost souls back to the forest they call home." },
+  { emoji: '🌟', name: 'The Bloom',      lore: "Five stars shaped like a moonrose in bloom. Farmers watch it rise before planting their spring gardens." },
+  { emoji: '💫', name: 'The River',      lore: "A winding chain of stars that mirrors the Silverstream below. Merrow says it whispers on clear nights." },
+  { emoji: '✨', name: 'The Sprite',     lore: "A cluster that pulses like a heartbeat. Petal claims it dances when she does. No one disagrees." },
+  { emoji: '🌙', name: 'The Dreamer',    lore: "A crescent of dim stars only visible at midnight. Those who see it are said to dream in colors." },
+  { emoji: '☀️', name: 'The Awakening', lore: "An ancient pattern that rises at dawn on the solstice. Thistledown brews tea and watches every year." },
+];
+
+const lumisQuestions = [
+  "The stars above are not distant fires, Forest Spirit. They are windows. On clear nights, something looks back.",
+  "Time in the forest moves differently. A year here is a breath out there. Which would you choose?",
+  "I once saw a storm that lasted forty years. The trees that survived it have the most beautiful rings.",
+  "There are seven hidden doors in this forest. You have found one already. The others are watching you.",
+  "Every creature here has a story written before they arrived. Yours is still being written. That is rare.",
+];
+
+function buildConstellation() {
+  const board = document.getElementById('constellation-board');
+  if (!board) return;
+  board.innerHTML = constellations.map((c, i) => `
+    <div class="shop-item" style="padding:10px;text-align:center" onclick="showLore(${i})">
+      <div style="font-size:1.6rem">${c.emoji}</div>
+      <div style="font-size:0.65rem;color:var(--sage);margin-top:4px">${c.name}</div>
+    </div>
+  `).join('');
+}
+
+function showLore(i) {
+  document.getElementById('lore-entry').textContent = `"${constellations[i].name}" — ${constellations[i].lore}`;
+}
+
+function talkToLumis() {
+  const q = lumisQuestions[Math.floor(Math.random() * lumisQuestions.length)];
+  showDialogue('🦉 Lumis', [q]);
+}
+
+// ====== OVERRIDE showView to trigger panel inits ======
+const _origShowView = showView;
+showView = function(name) {
+  _origShowView(name);
+  if (name === 'letters') renderLetters();
+  if (name === 'inventory') renderInventoryPanel();
+  if (name === 'market') buildMarket();
+  if (name === 'treehouse') buildConstellation();
+};
 
 // ====== INIT ======
 buildTitle();
