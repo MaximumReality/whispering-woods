@@ -2268,17 +2268,21 @@ function triggerGlitch() {
   setTimeout(() => { document.body.style.filter = "none"; }, 150);
 }
 
-// ====== FIREBASE ======
+// ====== FIREBASE INITIALIZATION ======
 const firebaseConfig = {
-  apiKey: "AIzaSyD7UCjd17hlFrCn4i6eK12-lGPDJp_uhLU",
-  authDomain: "maximum-reality-guestbook.firebaseapp.com",
-  projectId: "maximum-reality-guestbook",
-  storageBucket: "maximum-reality-guestbook.firebasestorage.app",
-  messagingSenderId: "401509956215",
-  appId: "1:401509956215:web:255aefbb7fac268bb7a472",
-  measurementId: "G-HL0T5P5Y5E"
+  apiKey: "AIzaSyCCmQ6W_2BTnddhmXelUgIoaQM8YIA9VaY",
+  authDomain: "whispering-woods-c8e38.firebaseapp.com",
+  projectId: "whispering-woods-c8e38",
+  storageBucket: "whispering-woods-c8e38.firebasestorage.app",
+  messagingSenderId: "28867230155",
+  appId: "1:28867230155:web:e2440a73fdb3e7a1cf1e4e",
+  measurementId: "G-6RZ2GSBDNM"
 };
-firebase.initializeApp(firebaseConfig);
+
+// Initialize Firebase using the Compat SDK
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 const db = firebase.firestore();
 const SAVE_ID = "player_save_1";
 
